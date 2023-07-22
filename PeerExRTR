@@ -1,0 +1,224 @@
+hostname PeerExRTR
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$dXAM$xXkFgEAlVZPTMRYsR3aR41
+!
+aaa new-model
+!
+!
+!
+!
+!
+!
+!
+aaa session-id common
+ip cef
+!
+!
+!
+!
+!
+!
+ip domain name PeerExRTR.ccie.lab
+ipv6 unicast-routing
+ipv6 cef
+!
+!
+mpls ip default-route
+mpls ldp igp sync holddown 50
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+username user privilege 15 secret 5 $1$IyF1$hZyNuql2OSxwjL//Mo6gI/
+!
+!
+ip telnet source-interface Loopback0
+ip ssh time-out 60
+ip ssh authentication-retries 2
+ip ssh source-interface Loopback0
+ip ssh logging events
+ip ssh version 2
+!
+!
+!
+!
+!
+!
+!
+!
+bridge irb
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.6.6.9 255.255.255.255
+ ip access-group REMOTE_ACCESS in
+!
+interface FastEthernet0/0
+ no ip address
+ duplex full
+ bridge-group 8
+!
+interface FastEthernet1/0
+ no ip address
+ duplex full
+ bridge-group 8
+!
+interface Ethernet2/0
+ no ip address
+ duplex half
+!
+interface Ethernet2/0.488
+ description PeerA30
+ encapsulation dot1Q 488
+ ip address 60.4.88.1 255.255.255.252
+!
+interface Ethernet2/0.888
+ description INEX_MGMT
+ encapsulation dot1Q 888
+ ip address 10.88.8.1 255.255.255.0
+!
+interface Ethernet2/0.1050
+ description PeerA28
+ encapsulation dot1Q 1050
+ ip address 80.10.50.1 255.255.255.252
+!
+interface Ethernet2/0.2328
+ description PeerA29
+ encapsulation dot1Q 2328
+ ip address 80.23.28.1 255.255.255.252
+!
+interface Ethernet2/1
+ no ip address
+ shutdown
+ duplex full
+!
+interface Ethernet2/2
+ ip address 10.80.2.2 255.255.255.252
+ ip router isis 1
+ duplex half
+ mpls ip
+!
+interface Ethernet2/3
+ ip address 10.80.1.2 255.255.255.252
+ ip router isis 1
+ duplex half
+ mpls ip
+!
+interface Ethernet2/4
+ no ip address
+ shutdown
+ duplex full
+!
+interface Ethernet2/5
+ no ip address
+ shutdown
+ duplex full
+!
+interface Ethernet2/6
+ no ip address
+ shutdown
+ duplex full
+!
+interface Ethernet2/7
+ no ip address
+ shutdown
+ duplex full
+!
+interface BVI8
+ ip address 192.168.0.28 255.255.255.0
+ ipv6 address autoconfig
+!
+router isis 1
+ net 49.0001.0800.0800.0009.00
+ is-type level-2-only
+ advertise passive-only
+ metric-style wide
+ log-adjacency-changes all
+ passive-interface default
+ no passive-interface Ethernet2/2
+ no passive-interface Ethernet2/3
+ default-information originate
+!
+router bgp 123
+ bgp router-id 10.6.6.9
+ bgp log-neighbor-changes
+ neighbor IBGP peer-group
+ neighbor IBGP remote-as 123
+ neighbor IBGP update-source Loopback0
+ neighbor RRv6 peer-group
+ neighbor RRv6 remote-as 123
+ neighbor RRv6 update-source Loopback0
+ neighbor AS1050 peer-group
+ neighbor AS1050 remote-as 1050
+ neighbor AS1050 update-source Ethernet2/0.1050
+ neighbor AS2328 peer-group
+ neighbor AS2328 remote-as 2328
+ neighbor AS2328 update-source Ethernet2/0.2328
+ neighbor AS488 peer-group
+ neighbor AS488 remote-as 488
+ neighbor AS488 update-source Ethernet2/0.488
+ neighbor 10.6.6.6 peer-group IBGP
+ neighbor 60.4.88.2 peer-group AS488
+ neighbor 80.10.50.2 peer-group AS1050
+ neighbor 80.23.28.2 peer-group AS2328
+ !
+ address-family ipv4
+  redistribute static metric 100
+  neighbor 10.6.6.6 activate
+  neighbor 60.4.88.2 activate
+  neighbor 80.10.50.2 activate
+  neighbor 80.23.28.2 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 192.168.0.1
+!
+ip access-list extended REMOTE_ACCESS
+ permit tcp 192.168.0.0 0.0.0.255 host 10.6.6.9 eq 22
+ permit tcp 192.168.0.0 0.0.0.255 host 10.6.6.9 eq telnet
+ permit tcp host 10.6.6.9 eq 22 192.168.0.0 0.0.0.255
+ permit tcp host 10.6.6.9 eq telnet 192.168.0.0 0.0.0.255
+ permit tcp host 10.6.6.9 192.168.0.0 0.0.0.255
+ permit tcp 192.168.0.0 0.0.0.255 host 10.6.6.9
+ deny   ip any any log
+!
+ipv6 router rip 6bone
+!
+!
+!
+!
+bridge 8 protocol ieee
+bridge 8 route ip
+!
+control-plane
+!
+!
+line con 0
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ privilege level 15
+ logging synchronous
+ transport input telnet ssh
+line vty 5 15
+ privilege level 15
+ logging synchronous
+ transport input telnet ssh
+!
+!
+end
