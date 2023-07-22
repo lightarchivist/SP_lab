@@ -1,0 +1,201 @@
+hostname CORE-RR
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$.Z2w$il0FygL.8I56aH6XSqLXt0
+!
+aaa new-model
+!
+!
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+ip domain name CORE-RR.ccie.lab
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+mpls ldp igp sync holddown 50
+mpls ip default-route
+!
+!
+!
+!
+!
+!
+!
+cts logging verbose
+!
+!
+username user privilege 15 password 7 00301615100A5955
+!
+redundancy
+!
+no cdp run
+!
+ip telnet source-interface Loopback0
+ip ssh source-interface Loopback0
+ip ssh version 2
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.6.6.6 255.255.255.255
+ ipv6 address autoconfig
+!
+interface Ethernet0/0
+ ip address 10.100.0.1 255.255.255.252
+ ip router isis 1
+ mpls ip
+!
+interface Ethernet0/1
+ ip address 10.100.0.5 255.255.255.252
+ ip router isis 1
+ mpls ip
+!
+interface Ethernet0/2
+ ip address 10.110.0.1 255.255.255.252
+ ip router isis 1
+ shutdown
+!
+interface Ethernet0/3
+ ip address 10.110.0.5 255.255.255.252
+ ip router isis 1
+ shutdown
+!
+interface Ethernet1/0
+ description OUTSIDE
+ ip address dhcp
+ shutdown
+ ipv6 address dhcp
+!
+interface Ethernet1/1
+ no ip address
+ shutdown
+!
+interface Ethernet1/2
+ no ip address
+ shutdown
+!
+interface Ethernet1/3
+ no ip address
+ shutdown
+!
+router isis 1
+ mpls ldp autoconfig level-2
+ net 49.0001.0101.0000.0001.00
+ is-type level-2-only
+ metric-style wide level-2
+ passive-interface Loopback0
+!
+router isis
+!
+router bgp 123
+ bgp router-id 10.6.6.6
+ bgp log-neighbor-changes
+ neighbor IBGP peer-group
+ neighbor IBGP remote-as 123
+ neighbor IBGP update-source Loopback0
+ neighbor 1.1.1.1 peer-group IBGP
+ neighbor 2.2.2.2 peer-group IBGP
+ neighbor 3.3.3.3 peer-group IBGP
+ neighbor 4.4.4.4 peer-group IBGP
+ neighbor 10.6.6.9 peer-group IBGP
+ neighbor 10.6.6.10 peer-group IBGP
+ neighbor 10.6.6.11 peer-group IBGP
+ !
+ address-family ipv4
+  network 0.0.0.0
+  network 10.6.6.6 mask 255.255.255.255
+  neighbor IBGP route-reflector-client
+  neighbor IBGP next-hop-self
+  neighbor IBGP send-label
+  neighbor 1.1.1.1 activate
+  neighbor 2.2.2.2 activate
+  neighbor 3.3.3.3 activate
+  neighbor 4.4.4.4 activate
+  neighbor 10.6.6.9 activate
+  neighbor 10.6.6.10 activate
+  neighbor 10.6.6.11 activate
+ exit-address-family
+ !
+ address-family ipv6
+  redistribute connected
+  neighbor IBGP route-reflector-client
+  neighbor IBGP send-label
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+mpls ldp router-id Loopback0
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ privilege level 15
+ logging synchronous
+ transport input telnet ssh
+!
+!
+end
