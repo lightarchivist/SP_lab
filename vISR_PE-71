@@ -1,0 +1,158 @@
+hostname vISR_PE
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+mpls ip default-route
+mpls ldp igp sync holddown 50
+!
+
+
+!
+!
+spanning-tree extend system-id
+!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.6.6.11 255.255.255.255
+!
+interface GigabitEthernet1
+ ip address 10.102.0.6 255.255.255.252
+ ip router isis 1
+ negotiation auto
+ mpls ip
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ ip address 10.102.0.10 255.255.255.252
+ ip router isis 1
+ negotiation auto
+ mpls ip
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router isis 1
+ net 49.0001.1000.6006.0011.00
+ is-type level-2-only
+ router-id Loopback0
+ metric-style wide
+ passive-interface Loopback0
+!
+router bgp 123
+ bgp log-neighbor-changes
+ neighbor RRv4 peer-group
+ neighbor RRv4 remote-as 123
+ neighbor RRv4 update-source Loopback0
+ neighbor 10.6.6.6 remote-as 123
+ neighbor 10.6.6.6 peer-group RRv4
+ !
+ address-family ipv4
+  neighbor RRv4 next-hop-self
+  neighbor 10.6.6.6 activate
+ exit-address-family
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+!
+!
+!
+mpls ldp router-id Loopback0
+!
+!
+!
+control-plane
+!
+!
+mgcp behavior rsip-range tgcp-only
+mgcp behavior comedia-role none
+mgcp behavior comedia-check-media-src disable
+mgcp behavior comedia-sdp-force disable
+!
+mgcp profile default
+!
+!
+!
+!
+!
+!
+line con 0
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ login
+ transport input ssh
+!
