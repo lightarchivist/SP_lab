@@ -1,0 +1,97 @@
+hostname NeutralExchange
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+!
+cts logging verbose
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+vlan 1050
+ name AS1050
+!
+vlan 2328
+ name AS2328
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ switchport trunk allowed vlan 488,888,1050,2328
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ duplex half
+!
+interface Ethernet0/1
+ description AS488
+ switchport access vlan 488
+ duplex half
+!
+interface Ethernet0/2
+ description AS2328
+ switchport access vlan 2328
+ switchport mode access
+ duplex half
+!
+interface Ethernet0/3
+ description AS1050
+ switchport access vlan 1050
+ switchport mode access
+ duplex half
+!
+interface Vlan888
+ ip address 10.88.8.254 255.255.255.0
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 10.88.8.1
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+!
+!
+end
